@@ -9,13 +9,16 @@ public class Drive : MonoBehaviour
     public float speed = 10.0f;
     public float rotationSpeed = 100.0f;
     public GameObject fuel;
+    bool autoPilot = false;
+    float tspeed = 2f;
+    float rspeed = 0.2f;
 
     void Start()
     {
         
     }
 
-    private void CalculateDistance()
+    float CalculateDistance()
     {
         // The use of z value is because of 2D and there is no y value - using Pythagorous Theorem
         float distance = Mathf.Sqrt(Mathf.Pow(fuel.transform.position.x - transform.position.x, 2) + Mathf.Pow(fuel.transform.position.z - transform.position.z, 2)); 
@@ -35,7 +38,14 @@ public class Drive : MonoBehaviour
         Debug.Log("V Magnitude:" + tankToFuel.magnitude);
         // Square magnitude is a faster operation than magnitude
         Debug.Log("V SqMagnitude:" + tankToFuel.sqrMagnitude);
-        
+
+        return distance;
+    }
+
+    void AutoPilot()
+    {
+        CalculateAngle();
+        this.transform.position += this.transform.up * tspeed * Time.deltaTime;
     }
 
     private void CalculateAngle()
@@ -56,7 +66,8 @@ public class Drive : MonoBehaviour
         if(Cross(tankForward, fuelDirection).z < 0)
             clockwise = -1;
 
-        this.transform.Rotate(0, 0, angle * Mathf.Rad2Deg * clockwise);
+        if(angle * Mathf.Rad2Deg > 10)
+            this.transform.Rotate(0, 0, angle * Mathf.Rad2Deg * clockwise * rspeed);
     }
 
     Vector3 Cross(Vector3 v, Vector3 w)
@@ -92,6 +103,18 @@ public class Drive : MonoBehaviour
         {
             CalculateDistance();
             CalculateAngle();
+        }
+
+        if (Input.GetKeyDown(KeyCode.T))
+        {
+            autoPilot = !autoPilot;
+
+        }
+        if (CalculateDistance() < 3)
+            autoPilot = false;
+
+        if(autoPilot) {
+            AutoPilot();
         }
 
     }
